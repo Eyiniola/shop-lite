@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "lint": "eslint . --config eslint.config.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test":  "echo \"No tests defined for this project.\""
   },
   "keywords": [],
   "author": "",
