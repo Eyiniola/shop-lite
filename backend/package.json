@@ -7,17 +7,22 @@
   "scripts": {
     "start": "node server.js",
     "lint": "eslint . --config eslint.config.js",
-    "test":  "echo \"No tests defined for this project.\""
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
+
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.1.0"
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.0",
     "eslint": "^9.30.0",
-    "jest": "^30.0.3"
+    "jest": "^30.0.3",
+    "mongodb-memory-server": "^10.1.4",
+    "supertest": "^7.1.1"
   }
 }
