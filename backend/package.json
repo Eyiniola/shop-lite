@@ -9,11 +9,11 @@
     "lint": "eslint . --config eslint.config.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "mongoose": "^8.16.1"
