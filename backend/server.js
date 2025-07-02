@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 //import mongoose from 'mongoose';  
 import { connectDB } from './config/db.js';
 import productRoutes from './routes/products.js';
@@ -7,7 +8,7 @@ import productRoutes from './routes/products.js';
 dotenv.config();
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 app.use('/products', productRoutes);
 
