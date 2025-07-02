@@ -27,6 +27,7 @@ function App() {
       const response = await axios.get('http://localhost:5000/products');
       setProducts(response.data);
     } catch (err) {
+      console.error(err);
       setError('Failed to load products');
     }
     setLoading(false);
@@ -48,6 +49,7 @@ function App() {
       setProducts((prev) => [...prev, response.data]);
       setForm({ name: '', description: '', price: '', category: '', inStock: true });
     } catch (err) {
+      console.error(err);
       setError('Failed to create product');
     }
   };
