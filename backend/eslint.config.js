@@ -1,29 +1,34 @@
-// backend/eslint.config.js (or eslint.config.mjs)
-
-import js from '@eslint/js'; // Keep this import for the base config
+import js from '@eslint/js';
 
 export default [
   {
-    files: ["**/*.js"], // Apply this configuration to all .js files
+    files: ['**/*.js'],
     languageOptions: {
-      ecmaVersion: 2022, // Or your current Node.js version, e.g., 2022, 2023, 2024
-      sourceType: "module", // Specify that this is an ES Module
+      ecmaVersion: 2022,
+      sourceType: 'module',
       globals: {
-        // Define global variables explicitly
-        process: "readonly", // 'process' is available and should not be reassigned
-        console: "readonly"  // 'console' is available and should not be reassigned
-      }
+        process: 'readonly',
+        console: 'readonly',
+      },
     },
     rules: {
-      ...js.configs.recommended.rules, // Include recommended ESLint rules
-      // Add or override specific rules here if needed
-      // 'no-unused-vars': 'warn', // Example: change no-unused-vars to a warning
-    }
+      ...js.configs.recommended.rules,
+    },
   },
-    {
-    files: ["**/*.test.js"],  // <-- Add this override for test files
-    env: {
-      jest: true,            // <-- Tell ESLint these files use Jest globals
-    }
-  }
+  {
+    files: ['**/*.test.js'],
+    languageOptions: {
+      globals: {
+        // Jest testing globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+      },
+    },
+  },
 ];
