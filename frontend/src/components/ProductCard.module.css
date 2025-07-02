@@ -1,0 +1,44 @@
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #222;
+}
+
+.category {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: #666;
+  flex-grow: 1;
+}
+
+.price {
+  font-weight: bold;
+  color: #007bff;
+  font-size: 1.1rem;
+}
+
+.inStock {
+  color: green;
+  font-weight: 600;
+}
+
+.outStock {
+  color: red;
+  font-weight: 600;
+}
