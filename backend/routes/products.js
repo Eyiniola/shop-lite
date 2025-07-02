@@ -19,6 +19,7 @@ router.get('/:id', async (req, res) => {
       res.status(404).json({ message: 'Product not found' });
     }
   } catch (err) {
+    console.error(err);
     res.status(400).json({ message: 'Invalid ID format' });
   }
 });
@@ -56,6 +57,7 @@ router.put('/:id', async (req, res) => {
       res.status(404).json({ message: 'Product not found' });
     }
   } catch (err) {
+    console.error(err);
     res.status(400).json({ message: 'Invalid ID or update error' });
   }
 });
@@ -72,6 +74,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ message: 'Product not found' });
     }
   } catch (err) {
+    console.error(err);
     res.status(400).json({ message: 'Invalid ID or delete error' });
   }
 });
