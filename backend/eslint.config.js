@@ -19,5 +19,11 @@ export default [
       // Add or override specific rules here if needed
       // 'no-unused-vars': 'warn', // Example: change no-unused-vars to a warning
     }
+  },
+    {
+    files: ["**/*.test.js"],  // <-- Add this override for test files
+    env: {
+      jest: true,            // <-- Tell ESLint these files use Jest globals
+    }
   }
 ];
