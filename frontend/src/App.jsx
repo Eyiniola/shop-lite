@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ProductList from './components/ProductList';
-import ProductForm from './components/ProductForm';
 import './App.css';
 
 function App() {
@@ -61,8 +60,7 @@ function App() {
       {error && <p className="error">{error}</p>}
 
       <ProductList products={products} />
-      <h2>Add a new product</h2>
-      <ProductForm form={form} onChange={handleChange} onSubmit={handleSubmit} />
+      
     </div>
   );
 }

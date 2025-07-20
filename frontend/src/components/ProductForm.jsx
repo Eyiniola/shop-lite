@@ -1,16 +1,56 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './ProductForm.module.css';
 
-export default function ProductForm({ form, onChange, onSubmit }) {
+const ProductForm = ({ onSubmit, initialData }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    category: '',
+    inStock: false,
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        description: initialData.description || '',
+        price: initialData.price || '',
+        category: initialData.category || '',
+        inStock: initialData.inStock || false,
+      });
+    }
+  }, [initialData]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      category: '',
+      inStock: false,
+    });
+  };
+
   return (
-    <form className={styles.form} onSubmit={onSubmit}>
+    <form className={styles.form} onSubmit={handleSubmit}>
       <input
         className={styles.input}
         type="text"
         name="name"
         placeholder="Name"
-        value={form.name}
-        onChange={onChange}
+        value={formData.name}
+        onChange={handleChange}
         required
       />
       <input
@@ -18,16 +58,16 @@ export default function ProductForm({ form, onChange, onSubmit }) {
         type="text"
         name="description"
         placeholder="Description"
-        value={form.description}
-        onChange={onChange}
+        value={formData.description}
+        onChange={handleChange}
       />
       <input
         className={styles.input}
         type="number"
         name="price"
         placeholder="Price"
-        value={form.price}
-        onChange={onChange}
+        value={formData.price}
+        onChange={handleChange}
         required
         step="0.01"
         min="0"
@@ -37,19 +77,23 @@ export default function ProductForm({ form, onChange, onSubmit }) {
         type="text"
         name="category"
         placeholder="Category"
-        value={form.category}
-        onChange={onChange}
+        value={formData.category}
+        onChange={handleChange}
       />
       <label className={styles.checkboxLabel}>
         <input
           type="checkbox"
           name="inStock"
-          checked={form.inStock}
-          onChange={onChange}
+          checked={formData.inStock}
+          onChange={handleChange}
         />
         In Stock
       </label>
-      <button className={styles.button} type="submit">Add Product</button>
+      <button className={styles.button} type="submit">
+        {initialData ? 'Update' : 'Create'}
+      </button>
     </form>
   );
-}
+};
+
+export default ProductForm;
