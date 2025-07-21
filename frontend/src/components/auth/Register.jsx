@@ -1,5 +1,5 @@
 // src/components/Register.jsx
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import instance from '../../axios'; 
 import styles from './AuthForm.module.css'; // Shared styles with Login
