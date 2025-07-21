@@ -20,7 +20,7 @@ router.post('/register', async (req, res) => {
     await newUser.save();
     res.status(201).json({ message: 'User created' });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', err});
   }
 });
 
@@ -38,7 +38,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ token, user: { id: user._id, email: user.email } });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', err});
   }
 });
 
