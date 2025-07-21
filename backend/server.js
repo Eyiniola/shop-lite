@@ -4,12 +4,17 @@ import cors from 'cors';
 //import mongoose from 'mongoose';  
 import { connectDB } from './config/db.js';
 import productRoutes from './routes/products.js';
+import authRoutes from './routes/auth.js'
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'], // match your frontend origin
+  credentials: true,
+}));
 app.use(express.json());
+app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
 
 app.get('/', (req, res) => {

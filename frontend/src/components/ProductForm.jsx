@@ -1,45 +1,57 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styles from './ProductForm.module.css';
+import instance from '../axios'; // make sure this is correctly imported
 
-const ProductForm = ({ onSubmit, initialData }) => {
+const ProductForm = () => {
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const existingProduct = location.state?.product;
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     category: '',
-    inStock: false,
+    inStock: false
   });
 
   useEffect(() => {
-    if (initialData) {
-      setFormData({
-        name: initialData.name || '',
-        description: initialData.description || '',
-        price: initialData.price || '',
-        category: initialData.category || '',
-        inStock: initialData.inStock || false,
-      });
+    if (id && existingProduct) {
+      setFormData(existingProduct);
+    } else if (id) {
+      (async () => {
+        try {
+          const res = await instance.get(`/products/${id}`);
+          setFormData(res.data);
+        } catch (err) {
+          console.error("Error fetching product:", err);
+        }
+      })();
     }
-  }, [initialData]);
+  }, [id, existingProduct]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+    const { name, type, checked, value } = e.target;
+    setFormData({
+      ...formData,
       [name]: type === 'checkbox' ? checked : value,
-    }));
+    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      category: '',
-      inStock: false,
-    });
+    try {
+      if (id) {
+        await instance.put(`/products/${id}`, formData);
+      } else {
+        await instance.post('/products', formData);
+      }
+      navigate('/');
+    } catch (err) {
+      console.error("Error submitting form:", err);
+    }
   };
 
   return (
@@ -89,8 +101,8 @@ const ProductForm = ({ onSubmit, initialData }) => {
         />
         In Stock
       </label>
-      <button className={styles.button} type="submit">
-        {initialData ? 'Update' : 'Create'}
+      <button type="submit" className={styles.button}>
+        {id ? 'Update' : 'Create'}
       </button>
     </form>
   );
