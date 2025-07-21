@@ -1,0 +1,23 @@
+services:
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"  # ✅ string inside quotes
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/shoplist-lite  # ⬅ use 'mongo', not 'localhost'
+    depends_on:
+      - mongo
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

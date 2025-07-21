@@ -1,16 +1,27 @@
-import React, {useState, useEffect} from 'react';
+import React, { useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
-import ProductForm from './ProductForm';
 import styles from './ProductList.module.css';
-import axios from 'axios';
+import instance from '../axios';
+import { useNavigate } from 'react-router-dom';
 
-const Home = () => {
+const ProductList = () => {
   const [products, setProducts] = useState([]);
-  const [editingProduct, setEditingProduct] = useState(null);
+  const navigate = useNavigate();
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token); // true if token exists
+  }, []);
 
   const fetchProducts = async () => {
-    const res = await axios.get('http://localhost:5000/products');
-    setProducts(res.data);
+    try {
+      const res = await instance.get('http://localhost:5000/products');
+      setProducts(res.data);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+    }
   };
 
   useEffect(() => {
@@ -18,37 +29,38 @@ const Home = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:5000/products/${id}`);
-    fetchProducts(); // Refresh list
-  };
-
-  const handleEdit = (product) => {
-    setEditingProduct(product);
-  };
-
-  const handleFormSubmit = async (data) => {
-    if (editingProduct) {
-      await axios.put(`http://localhost:5000/products/${editingProduct._id}`, data);
-      setEditingProduct(null);
-    } else {
-      await axios.post('http://localhost:5000/products', data);
+    try {
+      await instance.delete(`http://localhost:5000/products/${id}`);
+      fetchProducts(); // Refresh list
+    } catch (err) {
+      console.error('Delete failed:', err);
     }
-    fetchProducts();
+  };
+
+  const handleEdit = (id) => {
+    navigate(`/edit/${id}`);
   };
 
   return (
     <div className={styles.list}>
-      <h2>{editingProduct ? 'Edit Product' : 'Add Product'}</h2>
-      <ProductForm
-        key={editingProduct ? editingProduct._id : 'new'}
-        initialData={editingProduct}
-        onSubmit={handleFormSubmit}
-      />
+      <div className={styles.header}>
+        <h2>All Products</h2>
+        {isLoggedIn && (
+        <button onClick={() => navigate('/create')} className={styles.button}>
+          Create Product
+        </button>
+      )}
+      </div>
       {products.map((product) => (
-        <ProductCard key={product._id} product={product} onDelete={handleDelete} onEdit={handleEdit} />
+        <ProductCard
+          key={product._id}
+          product={product}
+          onDelete={() => handleDelete(product._id)}
+          onEdit={() => handleEdit(product._id)}
+        />
       ))}
     </div>
   );
-}
+};
 
-export default Home;
+export default ProductList;
