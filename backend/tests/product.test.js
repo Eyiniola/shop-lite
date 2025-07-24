@@ -2,57 +2,54 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
 import mongoose from 'mongoose';
-import app from '../server.js';
+
+
+import app from '../server.js'; 
+
 import Product from '../models/Product.js';
 import User from '../models/User.js';
 
-jest.setTimeout(30000); // Increase timeout to 30 seconds
+jest.setTimeout(30000); // 30s for CI / Atlas
 
 let token;
+let productId;
 
 beforeAll(async () => {
-  try {
-    // Connect to the test database
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+  // Connect to your test DB (Atlas or local). If you use mongodb-memory-server, plug it here instead.
+  await mongoose.connect(process.env.MONGO_URI);
 
-    // Clear collections
-    await User.deleteMany();
-    await Product.deleteMany();
+  // Clean collections
+  await User.deleteMany();
+  await Product.deleteMany();
 
-    // Create a test user
-    await request(app).post('/auth/register').send({
+  // Register user
+  await request(app)
+    .post('/auth/register')
+    .send({
       name: 'Test User',
       email: 'test@example.com',
       password: 'password123',
     });
 
-    // Login test user to get token
-    const loginRes = await request(app).post('/auth/login').send({
+  // Login to get token
+  const loginRes = await request(app)
+    .post('/auth/login')
+    .send({
       email: 'test@example.com',
       password: 'password123',
     });
 
-    token = loginRes.body.token;
-    if (!token) throw new Error('Failed to retrieve auth token');
-  } catch (error) {
-    console.error('Error in beforeAll:', error);
+  token = loginRes.body.token;
+  if (!token) {
+    throw new Error('Failed to obtain JWT token during test setup');
   }
 });
 
 afterAll(async () => {
-  try {
-    await mongoose.connection.close(true);
-  } catch (error) {
-    console.error('Error closing DB:', error);
-  }
+  await mongoose.connection.close(true);
 });
 
 describe('Product API', () => {
-  let product;
-
   it('should create a new product', async () => {
     const res = await request(app)
       .post('/products')
@@ -61,24 +58,32 @@ describe('Product API', () => {
         name: 'Test Product',
         price: 1000,
         description: 'A product for testing',
+        category: 'Test',
+        inStock: true,
       });
 
     expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('_id');
     expect(res.body.name).toBe('Test Product');
     expect(res.body.price).toBe(1000);
 
-    product = res.body; // Save for later tests
+    productId = res.body._id;
   });
 
   it('should fetch all products', async () => {
     const res = await request(app).get('/products');
+
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThanOrEqual(1);
   });
 
   it('should update a product', async () => {
+    expect(productId).toBeDefined();
+
     const res = await request(app)
-      .patch(`/products/${product._id}`)
+      // If your route is PATCH, change to .patch
+      .put(`/products/${productId}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ price: 3500 });
 
@@ -87,8 +92,10 @@ describe('Product API', () => {
   });
 
   it('should delete a product', async () => {
+    expect(productId).toBeDefined();
+
     const res = await request(app)
-      .delete(`/products/${product._id}`)
+      .delete(`/products/${productId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.statusCode).toBe(200);
