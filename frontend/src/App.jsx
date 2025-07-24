@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import instance from './axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProductList from './components/ProductList';
@@ -6,10 +7,12 @@ import ProductForm from './components/ProductForm';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Header from './components/Header/Header';
+
 import './App.css';
 
 function App() {
   const [products, setProducts] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [user, setUser] = useState(null);
@@ -20,13 +23,16 @@ function App() {
     if (token) {
       setUser({ token });
     }
+
   }, []);
 
   const fetchProducts = async () => {
     setLoading(true);
     setError('');
     try {
+
       const response = await instance.get('/products');
+
       setProducts(response.data);
     } catch (err) {
       console.error(err);
@@ -35,9 +41,12 @@ function App() {
     setLoading(false);
   };
 
+
+
   return (
     <div className="container">
       <h1>ShopList Lite Products</h1>
+
       <Header user={user} setUser={setUser} />
       <Routes>
         <Route
@@ -55,6 +64,7 @@ function App() {
         <Route path="/create" element={<ProductForm />} />
         <Route path="/edit/:id" element={<ProductForm />} />
       </Routes>
+
     </div>
   );
 }

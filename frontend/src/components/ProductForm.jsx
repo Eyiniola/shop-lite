@@ -56,13 +56,16 @@ const ProductForm = () => {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+
       <input
         className={styles.input}
         type="text"
         name="name"
         placeholder="Name"
+
         value={formData.name}
         onChange={handleChange}
+
         required
       />
       <input
@@ -70,16 +73,20 @@ const ProductForm = () => {
         type="text"
         name="description"
         placeholder="Description"
+
         value={formData.description}
         onChange={handleChange}
+
       />
       <input
         className={styles.input}
         type="number"
         name="price"
         placeholder="Price"
+
         value={formData.price}
         onChange={handleChange}
+
         required
         step="0.01"
         min="0"
@@ -89,13 +96,16 @@ const ProductForm = () => {
         type="text"
         name="category"
         placeholder="Category"
+
         value={formData.category}
         onChange={handleChange}
+
       />
       <label className={styles.checkboxLabel}>
         <input
           type="checkbox"
           name="inStock"
+
           checked={formData.inStock}
           onChange={handleChange}
         />
@@ -109,3 +119,4 @@ const ProductForm = () => {
 };
 
 export default ProductForm;
+

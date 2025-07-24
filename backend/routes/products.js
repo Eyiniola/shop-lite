@@ -26,6 +26,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // @desc    Create new product
+
 router.post('/', authMiddleware, async (req, res) => {
   const { name, description, price, category, inStock } = req.body;
 
@@ -39,6 +40,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // @desc    Update product
+
 router.put('/:id', authMiddleware, async (req, res) => {
   const { name, description, price, category, inStock } = req.body;
 
@@ -64,6 +66,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // @desc    Delete product
+
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);

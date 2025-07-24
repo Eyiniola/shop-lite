@@ -1,3 +1,4 @@
+
 // tests/product.test.js
 import request from 'supertest';
 import app from '../app';
@@ -45,11 +46,13 @@ describe('Product API', () => {
         name: 'Test Product',
         price: 1000,
         description: 'A product for testing',
+
       });
 
     expect(res.statusCode).toBe(201);
     expect(res.body.name).toBe('Test Product');
     expect(res.body.price).toBe(1000);
+
 
     product = res.body; // Save for later tests
   });
@@ -64,6 +67,7 @@ describe('Product API', () => {
     const res = await request(app)
       .patch(`/products/${product._id}`)
       .set('Authorization', `Bearer ${token}`)
+
       .send({ price: 3500 });
 
     expect(res.statusCode).toBe(200);
@@ -74,6 +78,7 @@ describe('Product API', () => {
     const res = await request(app)
       .delete(`/products/${product._id}`)
       .set('Authorization', `Bearer ${token}`);
+
 
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toBe('Product deleted');
