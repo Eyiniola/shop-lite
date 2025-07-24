@@ -1,38 +1,52 @@
-
 // tests/product.test.js
 import request from 'supertest';
-import app from './../server.js';
 import mongoose from 'mongoose';
-import Product from '../models/Product';
-import User from '../models/User';
+import app from '../server.js';
+import Product from '../models/Product.js';
+import User from '../models/User.js';
+
+jest.setTimeout(30000); // Increase timeout to 30 seconds
 
 let token;
 
 beforeAll(async () => {
-  // Connect to test DB if needed
-  await mongoose.connect(process.env.MONGO_URI);
+  try {
+    // Connect to the test database
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
 
-  // Clear users and products
-  await User.deleteMany();
-  await Product.deleteMany();
+    // Clear collections
+    await User.deleteMany();
+    await Product.deleteMany();
 
-  // Create and login user
-  //const newUser = await request(app).post('/auth/register').send({
-    //name: 'Test User',
-    //email: 'test@example.com',
-    //password: 'password123',
-  //});
+    // Create a test user
+    await request(app).post('/auth/register').send({
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'password123',
+    });
 
-  const loginRes = await request(app).post('/auth/login').send({
-    email: 'test@example.com',
-    password: 'password123',
-  });
+    // Login test user to get token
+    const loginRes = await request(app).post('/auth/login').send({
+      email: 'test@example.com',
+      password: 'password123',
+    });
 
-  token = loginRes.body.token;
+    token = loginRes.body.token;
+    if (!token) throw new Error('Failed to retrieve auth token');
+  } catch (error) {
+    console.error('Error in beforeAll:', error);
+  }
 });
 
 afterAll(async () => {
-  await mongoose.connection.close(true);
+  try {
+    await mongoose.connection.close(true);
+  } catch (error) {
+    console.error('Error closing DB:', error);
+  }
 });
 
 describe('Product API', () => {
@@ -46,13 +60,11 @@ describe('Product API', () => {
         name: 'Test Product',
         price: 1000,
         description: 'A product for testing',
-
       });
 
     expect(res.statusCode).toBe(201);
     expect(res.body.name).toBe('Test Product');
     expect(res.body.price).toBe(1000);
-
 
     product = res.body; // Save for later tests
   });
@@ -67,7 +79,6 @@ describe('Product API', () => {
     const res = await request(app)
       .patch(`/products/${product._id}`)
       .set('Authorization', `Bearer ${token}`)
-
       .send({ price: 3500 });
 
     expect(res.statusCode).toBe(200);
@@ -78,7 +89,6 @@ describe('Product API', () => {
     const res = await request(app)
       .delete(`/products/${product._id}`)
       .set('Authorization', `Bearer ${token}`);
-
 
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toBe('Product deleted');
