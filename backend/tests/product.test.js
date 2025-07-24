@@ -17,11 +17,11 @@ beforeAll(async () => {
   await Product.deleteMany();
 
   // Create and login user
-  const newUser = await request(app).post('/auth/register').send({
-    name: 'Test User',
-    email: 'test@example.com',
-    password: 'password123',
-  });
+  //const newUser = await request(app).post('/auth/register').send({
+    //name: 'Test User',
+    //email: 'test@example.com',
+    //password: 'password123',
+  //});
 
   const loginRes = await request(app).post('/auth/login').send({
     email: 'test@example.com',
