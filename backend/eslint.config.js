@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import globals from 'globals';
 
 export default [
   {
@@ -19,15 +20,7 @@ export default [
     files: ['**/*.test.js'],
     languageOptions: {
       globals: {
-        // Jest testing globals
-        describe: 'readonly',
-        it: 'readonly',
-        test: 'readonly',
-        expect: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
+        ...globals.jest, // Add all Jest globals
       },
     },
   },
