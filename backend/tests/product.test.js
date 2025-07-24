@@ -1,7 +1,7 @@
 
 // tests/product.test.js
 import request from 'supertest';
-import app from '../app';
+import app from './../server.js';
 import mongoose from 'mongoose';
 import Product from '../models/Product';
 import User from '../models/User';
@@ -32,7 +32,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.close();
+  await mongoose.connection.close(true);
 });
 
 describe('Product API', () => {
