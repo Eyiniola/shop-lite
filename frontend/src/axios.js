@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:5000', // Your backend API root
+  baseURL: "https://shoplite-backend.azurewebsites.net", // Your backend API root
   withCredentials: true, // Include cookies for auth (if using sessions/JWT in cookies)
 });
 

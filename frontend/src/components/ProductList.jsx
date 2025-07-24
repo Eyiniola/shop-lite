@@ -17,7 +17,7 @@ const ProductList = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await instance.get('http://localhost:5000/products');
+      const res = await instance.get('https://shoplite-backend.azurewebsites.net/products');
       setProducts(res.data);
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -30,7 +30,7 @@ const ProductList = () => {
 
   const handleDelete = async (id) => {
     try {
-      await instance.delete(`http://localhost:5000/products/${id}`);
+      await instance.delete(`https://shoplite-backend.azurewebsites.net/products/${id}`);
       fetchProducts(); // Refresh list
     } catch (err) {
       console.error('Delete failed:', err);

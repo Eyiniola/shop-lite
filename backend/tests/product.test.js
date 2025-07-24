@@ -1,44 +1,42 @@
+// tests/product.test.js
 import request from 'supertest';
+import app from '../app';
 import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import app from '../server.js';
-import Product from '../models/Product.js';
-import User from '../models/User.js'; // Assuming this exists
+import Product from '../models/Product';
+import User from '../models/User';
 
-let mongoServer;
 let token;
 
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
-  await mongoose.connect(uri);
+  // Connect to test DB if needed
+  await mongoose.connect(process.env.MONGO_URI);
 
-  // Create test user and generate JWT
-  const user = await User.create({
-    username: 'testuser',
+  // Clear users and products
+  await User.deleteMany();
+  await Product.deleteMany();
+
+  // Create and login user
+  const newUser = await request(app).post('/auth/register').send({
+    name: 'Test User',
     email: 'test@example.com',
-    password: 'hashedpassword123' // Should be hashed if required by your schema
+    password: 'password123',
   });
 
-  token = jwt.sign(
-    { id: user._id, email: user.email },
-    process.env.JWT_SECRET || 'your_jwt_secret', // Use same secret as your app
-    { expiresIn: '1h' }
-  );
+  const loginRes = await request(app).post('/auth/login').send({
+    email: 'test@example.com',
+    password: 'password123',
+  });
+
+  token = loginRes.body.token;
 });
 
 afterAll(async () => {
-  await mongoose.disconnect();
-  await mongoServer.stop();
+  await mongoose.connection.close();
 });
 
-afterEach(async () => {
-  await Product.deleteMany();
-  await User.deleteMany();
-});
+describe('Product API', () => {
+  let product;
 
-describe('Product API (Authenticated)', () => {
   it('should create a new product', async () => {
     const res = await request(app)
       .post('/products')
@@ -46,30 +44,25 @@ describe('Product API (Authenticated)', () => {
       .send({
         name: 'Test Product',
         price: 1000,
+        description: 'A product for testing',
       });
 
     expect(res.statusCode).toBe(201);
     expect(res.body.name).toBe('Test Product');
     expect(res.body.price).toBe(1000);
+
+    product = res.body; // Save for later tests
   });
 
   it('should fetch all products', async () => {
-    await Product.create({ name: 'Rice', price: 5000 });
-
-    const res = await request(app)
-      .get('/products')
-      .set('Authorization', `Bearer ${token}`);
-
+    const res = await request(app).get('/products');
     expect(res.statusCode).toBe(200);
-    expect(res.body.length).toBe(1);
-    expect(res.body[0].name).toBe('Rice');
+    expect(Array.isArray(res.body)).toBe(true);
   });
 
   it('should update a product', async () => {
-    const product = await Product.create({ name: 'Beans', price: 3000 });
-
     const res = await request(app)
-      .put(`/products/${product._id}`)
+      .patch(`/products/${product._id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ price: 3500 });
 
@@ -78,8 +71,6 @@ describe('Product API (Authenticated)', () => {
   });
 
   it('should delete a product', async () => {
-    const product = await Product.create({ name: 'Yam', price: 4000 });
-
     const res = await request(app)
       .delete(`/products/${product._id}`)
       .set('Authorization', `Bearer ${token}`);

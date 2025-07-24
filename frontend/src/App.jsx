@@ -26,7 +26,7 @@ function App() {
     setLoading(true);
     setError('');
     try {
-      const response = await instance.get('http://localhost:5000/products');
+      const response = await instance.get('/products');
       setProducts(response.data);
     } catch (err) {
       console.error(err);
