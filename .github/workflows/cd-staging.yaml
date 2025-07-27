@@ -86,12 +86,12 @@ jobs:
       - name: Deploy Backend
         uses: azure/webapps-deploy@v2
         with:
-          app-name: shoplite-backend-staging
+          app-name: shoplite-backend
           images: ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:latest
 
       # Step 11: Deploy Frontend to Azure Web App
       - name: Deploy Frontend
         uses: azure/webapps-deploy@v2
         with:
-          app-name: shoplite-frontend-staging
+          app-name: shoplite-frontend
           images: ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:latest
