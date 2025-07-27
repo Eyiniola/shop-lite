@@ -56,16 +56,16 @@ jobs:
       - name: Azure Container Registry Login (Staging)
         uses: azure/docker-login@v2
         with:
-          login-server: ${{ secrets.ACR_LOGIN_SERVER_STAGING }}
-          username: ${{ secrets.ACR_USERNAME_STAGING }}
-          password: ${{ secrets.ACR_PASSWORD_STAGING }}
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Push Docker Images (Staging)
         run: |
-          docker tag shoplite-backend:staging ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-backend:staging
-          docker tag shoplite-frontend:staging ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-frontend:staging
-          docker push ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-backend:staging
-          docker push ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-frontend:staging
+          docker tag shoplite-backend:staging ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:staging
+          docker tag shoplite-frontend:staging ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:staging
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:staging
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:staging
 
       - name: Deploy Backend (Staging)
         uses: azure/webapps-deploy@v2
@@ -77,4 +77,4 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: shoplite-frontend-staging
-          images: ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-frontend:staging
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:staging
