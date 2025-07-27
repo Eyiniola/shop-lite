@@ -1,0 +1,101 @@
+name: Continuous Deployment - Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Step 3: Install & Lint/Test Backend
+      - name: Install & Test Backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run lint
+          npm test
+
+      # Step 4: Install & Lint/Test Frontend
+      - name: Install & Test Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+
+      # Step 5: Build Docker images
+      - name: Build Docker Images
+        run: |
+          docker build -t shoplite-backend:latest ./backend
+          docker build -t shoplite-frontend:latest ./frontend
+
+      # Step 6: Security scan (Trivy)
+      - name: Scan Backend Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: shoplite-backend:latest
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Scan Frontend Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: shoplite-frontend:latest
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      # Step 7: Login to Azure Container Registry
+      - name: Azure Container Registry Login
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Step 8: Push Docker Images
+      - name: Push Docker Images
+        run: |
+          docker tag shoplite-backend:latest ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:latest
+          docker tag shoplite-frontend:latest ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:latest
+
+      # Step 9: Version bump & changelog
+      - name: Bump version and update CHANGELOG
+        run: |
+          npm install -g conventional-changelog-cli
+          conventional-changelog -p angular -i CHANGELOG.md -s -r 0
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add CHANGELOG.md
+          git commit -m "chore(release): update changelog [skip ci]" || echo "No changes to commit"
+          git push origin main || echo "No push"
+
+      # Step 10: Deploy Backend
+      - name: Deploy Backend
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: shoplite-backend
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:latest
+
+      # Step 11: Deploy Frontend
+      - name: Deploy Frontend
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: shoplite-frontend
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:latest

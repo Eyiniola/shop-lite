@@ -1,0 +1,80 @@
+name: Continuous Deployment - Staging
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install & Test Backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run lint
+          npm test
+
+      - name: Install & Test Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+
+      - name: Build Docker Images (Staging)
+        run: |
+          docker build -t shoplite-backend:staging ./backend
+          docker build -t shoplite-frontend:staging ./frontend
+
+      - name: Scan Backend Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: shoplite-backend:staging
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Scan Frontend Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: shoplite-frontend:staging
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Azure Container Registry Login (Staging)
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER_STAGING }}
+          username: ${{ secrets.ACR_USERNAME_STAGING }}
+          password: ${{ secrets.ACR_PASSWORD_STAGING }}
+
+      - name: Push Docker Images (Staging)
+        run: |
+          docker tag shoplite-backend:staging ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-backend:staging
+          docker tag shoplite-frontend:staging ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-frontend:staging
+          docker push ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-backend:staging
+          docker push ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-frontend:staging
+
+      - name: Deploy Backend (Staging)
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: shoplite-backend-staging
+          images: ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-backend:staging
+
+      - name: Deploy Frontend (Staging)
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: shoplite-frontend-staging
+          images: ${{ secrets.ACR_LOGIN_SERVER_STAGING }}/shoplite-frontend:staging
