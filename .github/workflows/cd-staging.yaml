@@ -54,16 +54,6 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
 
-      # Debug Step: Check if ACR_LOGIN_SERVER secret is present
-      - name: Debug Secrets
-        run: |
-          if [ -z "${{ secrets.ACR_LOGIN_SERVER }}" ]; then
-            echo "ACR_LOGIN_SERVER is NOT set"
-            exit 1
-          else
-            echo "ACR_LOGIN_SERVER secret is set"
-          fi
-
       - name: Azure Container Registry Login (Staging)
         uses: azure/docker-login@v2
         with:
