@@ -13,3 +13,11 @@ output "frontend_app_url" {
 output "backend_app_url" {
   value = "https://${azurerm_linux_web_app.backend.default_hostname}"
 }
+
+output "staging_frontend_url" {
+  value = "https://${azurerm_linux_web_app.frontend_staging.default_hostname}"
+}
+
+output "staging_backend_url" {
+  value = "https://${azurerm_linux_web_app.backend_staging.default_hostname}"
+}
