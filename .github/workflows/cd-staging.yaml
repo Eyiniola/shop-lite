@@ -1,0 +1,97 @@
+name: Continuous Deployment - Staging
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      # Step 1: Checkout Code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Step 3: Install & Test Backend
+      - name: Install & Test Backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run lint
+          npm test
+
+      # Step 4: Install & Build Frontend
+      - name: Install & Build Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+
+      # ✅ Step 5: Build Docker Images with staging tag
+      - name: Build Docker Images
+        run: |
+          docker build -t shoplite-backend:staging ./backend
+          docker build -t shoplite-frontend:staging ./frontend
+
+      # Step 6: Security Scan (Trivy)
+      - name: Scan Backend Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: shoplite-backend:staging
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Scan Frontend Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: shoplite-frontend:staging
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      # Step 7: Login to Azure Container Registry
+      - name: Azure Container Registry Login
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # ✅ Step 8: Push Docker Images with staging tag
+      - name: Push Docker Images
+        run: |
+          docker tag shoplite-backend:staging ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:staging
+          docker tag shoplite-frontend:staging ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:staging
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:staging
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:staging
+
+      # Step 9: Azure Login (required for webapps-deploy)
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # ✅ Step 10: Deploy Backend to Azure Web App using staging image
+      - name: Deploy Backend
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: shoplite-backend-staging
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:staging
+
+      # ✅ Step 11: Deploy Frontend to Azure Web App using staging image
+      - name: Deploy Frontend
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: shoplite-frontend-staging
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:staging

@@ -45,3 +45,16 @@ variable "backend_port" {
   type        = string
   default     = "5000"
 }
+
+variable "frontend_port_staging" {
+  description = "Port for the staging frontend container"
+  type        = string
+  default     = "80"
+}
+
+variable "backend_port_staging" {
+  description = "Port for the staging backend container"
+  type        = string
+  default     = "5000"
+}
+
