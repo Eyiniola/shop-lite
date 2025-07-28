@@ -11,14 +11,17 @@ jobs:
     environment: production
 
     steps:
+      # ⬇️ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ⬇️ Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      # ⬇️ Install and test backend
       - name: Install & Test Backend
         working-directory: backend
         run: |
@@ -26,6 +29,7 @@ jobs:
           npm run lint
           npm test
 
+      # ⬇️ Install and test frontend
       - name: Install & Test Frontend
         working-directory: frontend
         run: |
@@ -33,11 +37,13 @@ jobs:
           npm run lint
           npm run build
 
+      # ⬇️ Build Docker images
       - name: Build Docker Images (Production)
         run: |
           docker build -t shoplite-backend:latest ./backend
           docker build -t shoplite-frontend:latest ./frontend
 
+      # ⬇️ Scan backend Docker image for vulnerabilities
       - name: Scan Backend Image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
@@ -46,6 +52,7 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
 
+      # ⬇️ Scan frontend Docker image for vulnerabilities
       - name: Scan Frontend Image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
@@ -54,6 +61,13 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
 
+      # ⬇️ Log in to Azure using service principal
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # ⬇️ Log in to Azure Container Registry
       - name: Azure Container Registry Login (Production)
         uses: azure/docker-login@v2
         with:
@@ -61,6 +75,7 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      # ⬇️ Tag and push Docker images to ACR
       - name: Push Docker Images (Production)
         run: |
           docker tag shoplite-backend:latest ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:latest
@@ -68,12 +83,14 @@ jobs:
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:latest
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-frontend:latest
 
+      # ⬇️ Deploy backend container to Azure App Service
       - name: Deploy Backend (Production)
         uses: azure/webapps-deploy@v2
         with:
           app-name: shoplite-backend
           images: ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:latest
 
+      # ⬇️ Deploy frontend container to Azure App Service
       - name: Deploy Frontend (Production)
         uses: azure/webapps-deploy@v2
         with:
