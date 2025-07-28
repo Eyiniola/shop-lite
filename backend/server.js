@@ -10,7 +10,7 @@ dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', "https://shoplite-frontend.azurewebsites.net", "https://shoplite-frontend-staging.azurewebsites.net/register" ], // match your frontend origin
+  origin: ['http://localhost:5173', 'http://localhost:3000', "https://shoplite-frontend.azurewebsites.net", "https://shoplite-frontend-staging.azurewebsites.net" ], // match your frontend origin
   credentials: true,
 }));
 app.use(express.json());
