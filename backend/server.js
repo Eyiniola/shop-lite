@@ -10,7 +10,7 @@ dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', "https://shoplite-frontend.azurewebsites.net", "https://shoplite-frontend-staging.azurewebsites.net/register" ], // match your frontend origin
+  origin: ['http://localhost:5173', 'http://localhost:3000', "https://shoplite-frontend.azurewebsites.net", "https://shoplite-frontend-staging.azurewebsites.net" ], // match your frontend origin
   credentials: true,
 }));
 app.use(express.json());
@@ -26,7 +26,7 @@ if (process.env.NODE_ENV !== 'test') {
   connectDB()
     .then(() => {
       console.log('MongoDB connected');
-      const PORT = process.env.PORT;
+      const PORT = process.env.PORT || process.env.WEBSITES_PORT || 3000;
       app.listen(PORT, '0.0.0.0', () => {
         console.log(`Server running on port ${PORT}`);
       });
