@@ -24,17 +24,17 @@ jobs:
         with:
           node-version: 18
 
-      # ⬇️ Update CHANGELOG.md from PR titles
-      - name: Update CHANGELOG.md with merged PR titles
-        if: github.event_name == 'push'
+      # ⬇️ Update CHANGELOG.md from PR title
+      - name: Update CHANGELOG.md from PR title
+        if: github.event_name == 'pull_request'
         run: |
           git fetch --prune --unshallow || true
-          LAST_TAG=$(git describe --tags --abbrev=0 || echo "initial")
-          echo "## Changes in commit ${GITHUB_SHA:0:7} on $(date +'%Y-%m-%d')" >> TEMP_CHANGELOG.md
-          git log $LAST_TAG..HEAD --merges --pretty=format:"- %s" >> TEMP_CHANGELOG.md
-          echo "" >> TEMP_CHANGELOG.md
-          cat CHANGELOG.md >> TEMP_CHANGELOG.md
-          mv TEMP_CHANGELOG.md CHANGELOG.md
+
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          DATE=$(date -u +"%Y-%m-%d")
+          
+          echo -e "## ${DATE}\n- ${PR_TITLE}\n" >> CHANGELOG.md
+
 
       # ⬇️ Commit and push updated CHANGELOG.md
       - name: Commit CHANGELOG.md
