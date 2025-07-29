@@ -25,15 +25,14 @@ jobs:
           node-version: 18
 
       # ⬇️ Update CHANGELOG.md from PR title
-      - name: Update CHANGELOG.md from PR title
+      - name: Append PR title to CHANGELOG.md
         if: github.event_name == 'pull_request'
         run: |
-          git fetch --prune --unshallow || true
-
           PR_TITLE="${{ github.event.pull_request.title }}"
           DATE=$(date -u +"%Y-%m-%d")
-          
+    
           echo -e "## ${DATE}\n- ${PR_TITLE}\n" >> CHANGELOG.md
+
 
 
       # ⬇️ Commit and push updated CHANGELOG.md
