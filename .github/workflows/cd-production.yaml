@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   deploy-production:
@@ -20,6 +23,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+
+      # ⬇️ Update CHANGELOG.md from PR titles
+      - name: Update CHANGELOG.md with merged PR titles
+        if: github.event_name == 'push'
+        run: |
+          git fetch --prune --unshallow || true
+          LAST_TAG=$(git describe --tags --abbrev=0 || echo "initial")
+          echo "## Changes in commit ${GITHUB_SHA:0:7} on $(date +'%Y-%m-%d')" >> TEMP_CHANGELOG.md
+          git log $LAST_TAG..HEAD --merges --pretty=format:"- %s" >> TEMP_CHANGELOG.md
+          echo "" >> TEMP_CHANGELOG.md
+          cat CHANGELOG.md >> TEMP_CHANGELOG.md
+          mv TEMP_CHANGELOG.md CHANGELOG.md
+
+      # ⬇️ Commit and push updated CHANGELOG.md
+      - name: Commit CHANGELOG.md
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "chore: update CHANGELOG.md [skip ci]" || echo "No changes to commit"
+          git push origin main || echo "No changes pushed"
 
       # ⬇️ Install and test backend
       - name: Install & Test Backend
@@ -61,13 +86,13 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
 
-      # ⬇️ Log in to Azure using service principal
+      # ⬇️ Azure login
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # ⬇️ Log in to Azure Container Registry
+      # ⬇️ Login to ACR
       - name: Azure Container Registry Login (Production)
         uses: azure/docker-login@v2
         with:
@@ -75,7 +100,7 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      # ⬇️ Tag and push Docker images to ACR
+      # ⬇️ Push Docker images to ACR
       - name: Push Docker Images (Production)
         run: |
           docker tag shoplite-backend:latest ${{ secrets.ACR_LOGIN_SERVER }}/shoplite-backend:latest
