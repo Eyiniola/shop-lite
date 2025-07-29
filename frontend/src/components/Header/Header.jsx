@@ -15,7 +15,7 @@ function Header({ user, setUser }) {
         ) : (
           <>
             <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
+            <Link to="/register">Sign up</Link>
           </>
         )}
       </nav>
